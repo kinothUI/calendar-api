@@ -5,6 +5,14 @@ const cors = require("cors");
 
 require("dotenv").config();
 
+/**
+ * @todo handle token expiration
+ */
+const firstHandler = (req, res, next) => {
+  // handle expired cookies here
+  next();
+};
+
 const app = Express();
 
 const isProdEnv = process.env.NODE_ENV === "production";
@@ -25,10 +33,10 @@ app.use(cookieParser());
 
 // loading routes
 const PublicData = require("./routes/public/index");
-const AccountData = require("./routes/api/account");
+const EntityData = require("./routes/api/entity");
 
 app.use("/public", PublicData);
-app.use("/api/account", AccountData);
+app.use("/api/entity", firstHandler, EntityData);
 
 app.listen(PORT, HOST, () => {
   console.log("API started");

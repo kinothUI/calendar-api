@@ -10,11 +10,10 @@ const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const SELECT_USER_QUERY = `SELECT * FROM user WHERE email='${email}';`;
+    const SELECT_USER_QUERY = `SELECT * FROM account WHERE email='${email}';`;
 
     const sqlResponse = await mysql.query(SELECT_USER_QUERY);
     const validatedUser = await user.validate({ email, password }, sqlResponse.data);
-    console.log("validatedUser", validatedUser);
     const generated = await generateJWT(validatedUser, Cookies.TOKEN_EXPIRY);
     const cookies = await Cookies.get(generated.token);
 
