@@ -16,6 +16,5 @@ const roundUp = (num, precision) => {
 
 module.exports = {
   asyncForEach,
-  isLoggedInWithRole,
   roundUp,
 };

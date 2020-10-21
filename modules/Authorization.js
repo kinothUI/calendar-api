@@ -39,7 +39,7 @@ const authorizeUser = (accessToken) => {
 
       return resolve({ cookies, userData });
     } catch (error) {
-      logger.failure("tmt user authorization failed", error.error || error);
+      console.log("user authorization failed", error.error || error);
       return reject(error.error || error);
     }
   });
