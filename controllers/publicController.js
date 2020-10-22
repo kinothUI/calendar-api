@@ -5,6 +5,7 @@ const { generateJWT, verifyJWT } = require("../modules/jwt");
 const send = require("../modules/response");
 const Cookies = require("../modules/Cookie");
 const { MESSAGE } = require("../modules/Messages");
+const { withTeams } = require("../modules/helper");
 
 const login = async (req, res) => {
   try {
@@ -33,18 +34,12 @@ const account = async (req, res) => {
     if (!accessToken) return res.sendStatus(204);
 
     const userData = await verifyJWT(accessToken);
-
-    // generate new JWT with new user-data
-    // if (accountPatched) {
-    //   const SELECT_USER_QUERY = `SELECT * FROM user WHERE email='${email}';`;
-    //   const sqlResponse = await mysql.query(SELECT_USER_QUERY);
-    //   const newGenerated = await generateJWT(sqlResponse)
-    // }
+    const account = await withTeams(Array(userData));
 
     const newGenerated = await generateJWT(userData, Cookies.TOKEN_EXPIRY);
     const cookies = await Cookies.get(newGenerated.token);
 
-    send.authorized(res, cookies, userData);
+    send.authorized(res, cookies, ...account);
     console.log("successfull account-request: ", userData);
   } catch (error) {
     console.log("account", error.error || error);

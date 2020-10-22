@@ -6,7 +6,7 @@ const { ACCESS_TOKEN_NAME } = require("../modules/Cookie");
 const send = require("../modules/response");
 const { MESSAGE } = require("../modules/Messages");
 const { authorizeUser } = require("../modules/Authorization");
-const { asyncForEach } = require("../modules/helper");
+const { asyncForEach, withTeams } = require("../modules/helper");
 
 const GET = "GET";
 const POST = "POST";
@@ -92,7 +92,9 @@ const fetchEntity = async (req, res) => {
       const sqlResponse = await mysql.query(SELECT_ACCOUNTS_Q);
 
       const data = Array.isArray(sqlResponse.data) ? sqlResponse.data : Array(sqlResponse.data);
-      return send.authorized(res, cookies, data);
+      const accounts = await withTeams(data);
+
+      return send.authorized(res, cookies, accounts);
     }
 
     // Entity Team
