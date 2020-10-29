@@ -10,8 +10,8 @@ const TOKEN_EXPIRY_DATE = moment(TOKEN_EXPIRY * 1000 + now)
 const TOKEN_EXPIRED_DATE = moment(new Date(0)).toDate().toJSON();
 const COOKIE_MAX_AGE = 1000 * 60 * 60 * 24 * 365 * 42;
 
-const get = (token) => {
-  return Promise.resolve([
+const get = (token) =>
+  Promise.resolve([
     {
       name: ACCESS_TOKEN_NAME,
       value: token,
@@ -24,10 +24,9 @@ const get = (token) => {
       maxAge: COOKIE_MAX_AGE,
     },
   ]);
-};
 
-const remove = () => {
-  return Promise.resolve([
+const remove = () =>
+  Promise.resolve([
     {
       name: ACCESS_TOKEN_NAME,
       value: "",
@@ -40,7 +39,6 @@ const remove = () => {
       maxAge: 0,
     },
   ]);
-};
 
 module.exports = {
   get,

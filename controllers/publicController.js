@@ -13,8 +13,8 @@ const login = async (req, res) => {
 
     const SELECT_USER_QUERY = `SELECT * FROM account WHERE email='${email}';`;
 
-    const sqlResponse = await mysql.query(SELECT_USER_QUERY);
-    const validatedUser = await user.validate({ email, password }, sqlResponse.data);
+    const result = await mysql.query(SELECT_USER_QUERY);
+    const validatedUser = await user.validate({ email, password }, ...result);
     const generated = await generateJWT(validatedUser, Cookies.TOKEN_EXPIRY);
     const cookies = await Cookies.get(generated.token);
 
@@ -33,9 +33,10 @@ const account = async (req, res) => {
 
     if (!accessToken) return res.sendStatus(204);
 
+    // Hier muss ein abgelaufener JWT gehandhabt werden!!
+
     const userData = await verifyJWT(accessToken);
     const account = await withTeams(Array(userData));
-
     const newGenerated = await generateJWT(userData, Cookies.TOKEN_EXPIRY);
     const cookies = await Cookies.get(newGenerated.token);
 

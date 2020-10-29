@@ -42,8 +42,8 @@ const createEntity = async (req, res) => {
       // Persist selected Teams
       if (teams && teams.length) {
         try {
-          await asyncForEach(teams, async (teamId) => {
-            const PERSIST_ACCOUNT_TEAMS_Q = `INSERT INTO account_team (account_id, team_id) VALUES(${persistedAccount.data.insertId}, ${teamId});`;
+          await asyncForEach(teams, async (team) => {
+            const PERSIST_ACCOUNT_TEAMS_Q = `INSERT INTO account_team (account_id, team_id) VALUES(${persistedAccount.insertId}, ${team.id});`;
             await mysql.query(PERSIST_ACCOUNT_TEAMS_Q);
           });
         } catch (error) {
@@ -89,30 +89,30 @@ const fetchEntity = async (req, res) => {
     // Entity Account
     if (entity === EntityDescription.account) {
       const SELECT_ACCOUNTS_Q = `SELECT id, CONCAT('a', id) as identifier, name, surname, email, admin FROM ${entity};`;
-      const sqlResponse = await mysql.query(SELECT_ACCOUNTS_Q);
+      const result = await mysql.query(SELECT_ACCOUNTS_Q);
 
-      const data = Array.isArray(sqlResponse.data) ? sqlResponse.data : Array(sqlResponse.data);
-      const accounts = await withTeams(data);
+      const accounts = await withTeams(result);
 
-      return send.authorized(res, cookies, accounts);
+      if (!result.length) return send.authorized(res, cookies, StatusCodes.NO_CONTENT);
+      else return send.authorized(res, cookies, accounts);
     }
 
     // Entity Team
     if (entity === EntityDescription.team) {
       const SELECT_TEAM_Q = `SELECT id, CONCAT('t', id) as identifier, name FROM ${entity};`;
-      const sqlResponse = await mysql.query(SELECT_TEAM_Q);
+      const result = await mysql.query(SELECT_TEAM_Q);
 
-      const data = Array.isArray(sqlResponse.data) ? sqlResponse.data : Array(sqlResponse.data);
-      return send.authorized(res, cookies, data);
+      if (!result.length) return send.authorized(res, cookies, StatusCodes.NO_CONTENT);
+      else return send.authorized(res, cookies, result);
     }
 
     // Entity Room
     if (entity === EntityDescription.room) {
       const SELECT_ROOM_Q = `SELECT id, CONCAT('r', id) as identifier, name FROM ${entity};`;
-      const sqlResponse = await mysql.query(SELECT_ROOM_Q);
+      const result = await mysql.query(SELECT_ROOM_Q);
 
-      const data = Array.isArray(sqlResponse.data) ? sqlResponse.data : Array(sqlResponse.data);
-      return send.authorized(res, cookies, data);
+      if (!result.length) return send.authorized(res, cookies, StatusCodes.NO_CONTENT);
+      else return send.authorized(res, cookies, result);
     }
   } catch (error) {
     console.log("fetchEntity", error.error || error);
@@ -159,53 +159,6 @@ const deleteEntity = async (req, res) => {
   } catch (error) {
     console.log("deleteEntity", error.error || error);
     send.unauthorized(res, StatusCodes.UNAUTHORIZED, MESSAGE.UNAUTHORIZED);
-  }
-};
-
-/**
- * Helper function to produce the right sql query string.
- * @param {EntityDescription} entityDescription
- * @param {any} fields `req.body`
- * @todo replace with stored procedurs
- */
-const generateSqlQuery = async (action, entity, body) => {
-  // const { name, surname, email, password, admin, team } = body;
-
-  console.log({ action });
-  console.log({ body });
-
-  switch (action.type) {
-    // account
-    case `${GET}_${entity}`:
-      return `SELECT id, CONCAT('a', id) as identifier, name, surname, email, admin FROM account;`;
-    case `${POST}_${entity}`:
-    case `${PATCH}_${entity}`:
-      return `INSERT INTO ${entityDescription} (name, surname, email, password, admin) VALUES ('${name}', '${surname}', '${email}', '${password}', ${
-        admin ? true : false
-      } );`;
-    case `${DELETE}_${entity}`:
-
-    // team
-    case GET.entity:
-      return `SELECT id, CONCAT('t', id) as identifier, name FROM team;`;
-    case POST.entity:
-    case PATCH.entity:
-    case entity:
-      return `INSERT INTO ${entityDescription} (name) VALUES ('${name}');`;
-    case DELETE.entity:
-
-    // room
-    case GET.entity:
-      return `SELECT id, CONCAT('r', id) as identifier, name FROM room;`;
-    case POST.entity:
-    case PATCH.entity:
-    case entity:
-      return `INSERT INTO ${entityDescription} (name) VALUES ('${name}');`;
-    case DELETE.entity:
-
-    default:
-      console.log("Unknown Entity provided!", action);
-      throw Error("Unknown Entity provided!", action);
   }
 };
 

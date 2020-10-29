@@ -10,8 +10,9 @@ const withTeams = async (accounts) =>
   Promise.all(
     accounts.map(async (account) => {
       const SELECT_TEAMS_Q = `SELECT CONCAT('[', GROUP_CONCAT(team_id), ']') as teams FROM account_team WHERE account_id=${account.id};`;
-      const { data } = await mysql.query(SELECT_TEAMS_Q);
-      return { ...account, teams: JSON.parse(data.teams) };
+      const results = await mysql.query(SELECT_TEAMS_Q);
+
+      return { ...account, teams: JSON.parse(results[0].teams) };
     })
   );
 
